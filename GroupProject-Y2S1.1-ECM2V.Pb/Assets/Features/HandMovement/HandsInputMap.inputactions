@@ -1,0 +1,55 @@
+{
+    "version": 1,
+    "name": "HandsInputMap",
+    "maps": [
+        {
+            "name": "HandsInput",
+            "id": "58619e6c-ddf0-43dd-96b6-ba012484e041",
+            "actions": [
+                {
+                    "name": "LeftHandAction",
+                    "type": "Button",
+                    "id": "bcfd41bc-411b-4769-b82a-d5242812d004",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RightHandAction",
+                    "type": "Button",
+                    "id": "69443bb9-75dd-4797-998c-12d1fa6dfc0b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "95cb6c2c-6fcc-420b-963d-7e8e79738740",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3c969e2c-de6f-4691-a60f-dca19cf5f367",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
