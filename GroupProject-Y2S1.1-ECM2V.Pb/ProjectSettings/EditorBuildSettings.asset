@@ -11,6 +11,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Test/Test_Network.unity
     guid: 1f748c5c89f396a42ac05d9d4af109d4
+  - enabled: 1
+    path: Assets/Scenes/Test/Test_Player.unity
+    guid: 14d73c2151bb2ff41ae72ef8c5d43798
   m_configObjects:
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
+    com.unity.input.settings: {fileID: 11400000, guid: 4e28c8ef96e143a47a058a35ec94776a, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 69ef16967928c524aa2014db408c1ac9, type: 3}
   m_UseUCBPForAssetBundles: 0
