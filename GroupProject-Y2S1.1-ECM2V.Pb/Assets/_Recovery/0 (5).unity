@@ -6018,10 +6018,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Camera Anchor
       objectReference: {fileID: 0}
-    - target: {fileID: 2558534348443254364, guid: 4d802fc2319a5074fabbb4354518f286, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4536522067987177614, guid: 4d802fc2319a5074fabbb4354518f286, type: 3}
       propertyPath: m_TagString
       value: MainCamera

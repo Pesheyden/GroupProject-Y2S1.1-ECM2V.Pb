@@ -1,10 +1,10 @@
-using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
+    [SerializeField] private CameraController _cameraControllerPrefab;
     private CameraController _cameraController;
 
     [Header("Components")]
@@ -23,10 +23,37 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private LayerMask _groundMask = ~0;
     [SerializeField] private float _slopeTolerance = 50f;
 
+    [Header("Ragdoll")]
+    [SerializeField] private Collider[] _ragdollColliders = new Collider[0];
+
+    [Space]
+    [SerializeField] private float _ragdollLinearVelocityThreshold = 2f;
+    [SerializeField] private float _ragdollAngularVelocityThreshold = 2f;
+
+    [Space]
+    [SerializeField] private float _minRagdollTime = 2f;
+    [SerializeField] private float _maxRagdollTime = 20f;
+    private float _ragdollTime = 0f;
+    [SerializeField] private float _ragdollTimeReductionPerInput = 0.1f;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
         enabled = IsOwner;
+
+        SubscribeToInputActions();
+
+        _cameraController = Instantiate(_cameraControllerPrefab);
+        _cameraController.SetTarget(transform);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+
+        UnsubscribeFromInputActions();
+
+        Destroy(_cameraController.gameObject);
     }
 
     private void OnEnable()
@@ -41,10 +68,12 @@ public class PlayerController : NetworkBehaviour
 
     private void SubscribeToInputActions()
     {
-        if (!InputHandler.Instance) return;
+        if (!IsOwner || !InputHandler.Instance) return;
 
         _cameraController = InputHandler.Instance.CameraController;
         _cameraController.SetTarget(transform);
+
+        InputHandler.Instance.OnAnyPerformed += ReduceRagdollTime;
 
         InputHandler.Instance.OnMovePerformed += SetMoveInput;
         InputHandler.Instance.OnMoveCanceled += SetMoveInput;
@@ -54,10 +83,12 @@ public class PlayerController : NetworkBehaviour
 
     private void UnsubscribeFromInputActions()
     {
-        if (!InputHandler.Instance) return;
+        if (!IsOwner || !InputHandler.Instance) return;
 
         if (_cameraController.Target == transform) _cameraController.SetTarget(null);
         _cameraController = InputHandler.Instance.CameraController ? null : _cameraController;
+
+        InputHandler.Instance.OnAnyPerformed -= ReduceRagdollTime;
 
         InputHandler.Instance.OnMovePerformed -= SetMoveInput;
         InputHandler.Instance.OnMoveCanceled -= SetMoveInput;
@@ -74,13 +105,16 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        UpdateDisplacement();
-        _groundHit = GroundHit();
+        if (!IsRagdoll)
+        {
+            UpdateDisplacement();
+            _groundHit = GroundHit();
 
-        Gravity();
-        SnapToGround();
+            Gravity();
+            SnapToGround();
 
-        Move();
+            Move();
+        }
     }
 
     private void Move()
@@ -149,6 +183,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
         if (!IsGrounded) return;
+        if (IsRagdoll) return;
 
         _rigidbody.linearVelocity = new Vector3(_rigidbody.linearVelocity.x, 0f, _rigidbody.linearVelocity.z);
         _rigidbody.AddForce(_jumpImpulse * transform.up, ForceMode.Impulse);
@@ -219,14 +254,101 @@ public class PlayerController : NetworkBehaviour
     private bool IsSlopeTolerable => SlopeAngle <= _slopeTolerance;
     #endregion
 
-    //private void OnDrawGizmos()
-    //{
-    //    Vector3 origin = transform.position + _collider.center - (0.5f * _collider.height - _collider.radius) * transform.up;
-    //    Vector3 direction = -transform.up;
+    #region Ragdoll
+    public bool IsRagdoll { get; private set; }
+    public void EnableRagdoll()
+    {
+        Debug.Log($"{this}: enable ragdoll");
 
-    //    Vector3 offset = 0.1f * direction;
+        IsRagdoll = true;
 
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireSphere(origin + offset, _collider.radius);
-    //}
+        //_collider.enabled = false;
+        _rigidbody.useGravity = true;
+        _rigidbody.constraints = RigidbodyConstraints.None;
+
+        foreach (Collider collider in _ragdollColliders)
+        {
+            collider.enabled = true;
+            if (collider.attachedRigidbody)
+            {
+                collider.attachedRigidbody.linearVelocity = Vector3.zero;
+                collider.attachedRigidbody.angularVelocity = Vector3.zero;
+
+                collider.attachedRigidbody.isKinematic = true;
+            }
+        }
+
+        if (_cameraController) _cameraController.SetPerspective(CameraController.Perspective.ThirdPerson);
+
+        StartCoroutine(_ragdoll = Ragdoll());
+    }
+
+    public void DisableRagdoll()
+    {
+        Debug.Log($"{this}: disable ragdoll");
+
+        if (_ragdoll != null)
+        {
+            StopCoroutine(_ragdoll);
+            _ragdoll = null;
+        }
+
+        _collider.enabled = true;
+        _rigidbody.useGravity = false;
+        _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+
+        transform.rotation = Quaternion.identity;
+
+        foreach (Collider collider in _ragdollColliders)
+        {
+            collider.enabled = false;
+            if (collider.attachedRigidbody)
+            {
+                collider.attachedRigidbody.linearVelocity = Vector3.zero;
+                collider.attachedRigidbody.angularVelocity = Vector3.zero;
+
+                collider.attachedRigidbody.isKinematic = true;
+            }
+        }
+
+        if (_cameraController) _cameraController.SetPerspective(CameraController.Perspective.FirstPerson);
+
+        IsRagdoll = false;
+    }
+
+    private IEnumerator _ragdoll;
+    private IEnumerator Ragdoll()
+    {
+        _ragdollTime = _maxRagdollTime;
+        while (_ragdollTime > 0f)
+        {
+            yield return null;
+            _ragdollTime -= Time.deltaTime;
+            
+            if (_maxRagdollTime - _ragdollTime > _minRagdollTime &&
+                IsNotRagdollVelocityThreshold()) DisableRagdoll();
+        }
+
+        _ragdoll = null;
+    }
+
+    private bool IsNotRagdollVelocityThreshold()
+    {
+        return _rigidbody.linearVelocity.magnitude < _ragdollLinearVelocityThreshold &&
+            _rigidbody.angularVelocity.magnitude < _ragdollAngularVelocityThreshold;
+    }
+
+    private void ReduceRagdollTime()
+    {
+        _ragdollTime -= _ragdollTimeReductionPerInput;
+    }
+
+    [ContextMenu("Test_ImpulseRagdoll")]
+    private void Test_ImpulseRagdoll()
+    {
+        EnableRagdoll();
+
+        _rigidbody.AddForce(5f * Random.insideUnitSphere.normalized, ForceMode.Impulse);
+    }
+    #endregion
 }

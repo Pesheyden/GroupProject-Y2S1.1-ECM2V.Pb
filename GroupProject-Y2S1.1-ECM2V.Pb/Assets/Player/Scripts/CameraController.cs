@@ -168,4 +168,9 @@ public class CameraController : MonoBehaviour
     }
 
     public void SetTarget(Transform target) => _target = target;
+
+    public void SetPerspective(Perspective perspective)
+    {
+        _perspective = perspective;
+    }
 }

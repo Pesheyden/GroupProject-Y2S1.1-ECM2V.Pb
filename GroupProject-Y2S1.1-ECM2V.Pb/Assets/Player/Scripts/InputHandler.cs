@@ -16,6 +16,10 @@ public class InputHandler : MonoBehaviour
     public delegate void InputEvent();
     public delegate void InputEvent<T>(T parameter);
 
+    public event InputEvent OnAnyStarted;
+    public event InputEvent OnAnyPerformed;
+    public event InputEvent OnAnyCanceled;
+
     private InputAction _move;
     public event InputEvent<Vector2> OnMoveStarted;
     public event InputEvent<Vector2> OnMovePerformed;
@@ -91,6 +95,10 @@ public class InputHandler : MonoBehaviour
     private void ReadContext(InputAction.CallbackContext context)
     {
         InputAction action = context.action;
+
+        if (context.started) OnAnyStarted?.Invoke();
+        if (context.performed) OnAnyPerformed?.Invoke();
+        if (context.canceled) OnAnyCanceled?.Invoke();
 
         if (action == _move)
         {
