@@ -50,12 +50,12 @@ MonoBehaviour:
   _verticalJoint: {fileID: 6000402012454254615}
   _camera: {fileID: 3390054337313521098}
   _perspective: 0
-  _anchorOffset: {x: 0, y: 1.5, z: 0}
+  _anchorOffset: {x: 0, y: 0, z: 0}
   _minVerticalAngle: -60
   _maxVerticalAngle: 60
   _moveSensitivity: {x: 10, y: 10}
-  _firstPersonCameraOffset: {x: 0, y: 0, z: 0}
-  _thirdPersonCameraOffset: {x: 0, y: 1, z: -5}
+  _firstPersonCameraOffset: {x: 0, y: 0, z: 0.1}
+  _thirdPersonCameraOffset: {x: 0, y: 2.5, z: -5}
   _clipMask:
     serializedVersion: 2
     m_Bits: 55

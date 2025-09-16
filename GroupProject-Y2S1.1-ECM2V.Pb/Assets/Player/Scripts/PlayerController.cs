@@ -17,7 +17,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float _moveAcceleration = 10f;
 
     [Space]
-    [SerializeField] private float _jumpImpulse = 5f;
+    [SerializeField] private float _jumpImpulse = 10f;
 
     [Space]
     [SerializeField] private LayerMask _groundMask = ~0;
@@ -27,8 +27,11 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Collider[] _ragdollColliders = new Collider[0];
 
     [Space]
-    [SerializeField] private float _ragdollLinearVelocityThreshold = 2f;
-    [SerializeField] private float _ragdollAngularVelocityThreshold = 2f;
+    [SerializeField] private float _ragdollStartImpulseThreshold = 5f;
+
+    [Space]
+    [SerializeField] private float _ragdollEndLinearVelocityThreshold = 2f;
+    [SerializeField] private float _ragdollEndAngularVelocityThreshold = 2f;
 
     [Space]
     [SerializeField] private float _minRagdollTime = 2f;
@@ -36,24 +39,42 @@ public class PlayerController : NetworkBehaviour
     private float _ragdollTime = 0f;
     [SerializeField] private float _ragdollTimeReductionPerInput = 0.1f;
 
+    [Space]
+    [SerializeField] private Transform _head;
+    [SerializeField] private Transform _hips;
+    private Vector3 _hipsLocalPosition;
+
+    [Space]
+    [SerializeField] private Animator _animator;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        enabled = IsOwner;
+        //enabled = IsOwner;
 
-        SubscribeToInputActions();
+        if (IsOwner)
+        {
+            SubscribeToInputActions();
 
-        _cameraController = Instantiate(_cameraControllerPrefab);
-        _cameraController.SetTarget(transform);
+            _cameraController = Instantiate(_cameraControllerPrefab);
+            _cameraController.SetTarget(_head);
+
+            _hipsLocalPosition = _hips.localPosition;
+
+            DisableRagdoll();
+        }
     }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
 
-        UnsubscribeFromInputActions();
+        if (IsOwner)
+        {
+            UnsubscribeFromInputActions();
 
-        Destroy(_cameraController.gameObject);
+            Destroy(_cameraController.gameObject);
+        }
     }
 
     private void OnEnable()
@@ -226,6 +247,26 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (!IsOwner) return;
+
+        if (!IsRagdoll)
+        {
+            Turn();
+        }
+    }
+
+    private void Turn()
+    {
+        Vector3 upwards = Vector3.up;
+        Vector3 forward = _cameraController.Camera.transform.forward;
+
+        Vector3.OrthoNormalize(ref upwards, ref forward);
+
+        transform.rotation = Quaternion.LookRotation(forward, upwards);
+    }
+
     #region Displacement
     private Vector3 _oldPosition;
     private Vector3 _displacement;
@@ -258,23 +299,26 @@ public class PlayerController : NetworkBehaviour
     public bool IsRagdoll { get; private set; }
     public void EnableRagdoll()
     {
+        if (!IsOwner) return;
+
         Debug.Log($"{this}: enable ragdoll");
 
         IsRagdoll = true;
 
-        //_collider.enabled = false;
-        _rigidbody.useGravity = true;
-        _rigidbody.constraints = RigidbodyConstraints.None;
+        _animator.enabled = false;
+
+        _collider.enabled = false;
+        _rigidbody.isKinematic = true;
 
         foreach (Collider collider in _ragdollColliders)
         {
             collider.enabled = true;
             if (collider.attachedRigidbody)
             {
-                collider.attachedRigidbody.linearVelocity = Vector3.zero;
-                collider.attachedRigidbody.angularVelocity = Vector3.zero;
+                collider.attachedRigidbody.isKinematic = false;
 
-                collider.attachedRigidbody.isKinematic = true;
+                collider.attachedRigidbody.linearVelocity = _rigidbody.linearVelocity;
+                collider.attachedRigidbody.angularVelocity = Vector3.zero;
             }
         }
 
@@ -283,8 +327,13 @@ public class PlayerController : NetworkBehaviour
         StartCoroutine(_ragdoll = Ragdoll());
     }
 
+    [ClientRpc]
+    public void EnableRagdollClientRpc() => EnableRagdoll();
+
     public void DisableRagdoll()
     {
+        if (!IsOwner) return;
+
         Debug.Log($"{this}: disable ragdoll");
 
         if (_ragdoll != null)
@@ -293,15 +342,17 @@ public class PlayerController : NetworkBehaviour
             _ragdoll = null;
         }
 
-        _collider.enabled = true;
-        _rigidbody.useGravity = false;
-        _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+        _animator.enabled = true;
 
-        transform.rotation = Quaternion.identity;
+        _collider.enabled = true;
+        _rigidbody.isKinematic = false;
+
+        transform.position = _hips.TransformPoint(-_hipsLocalPosition);
+        _hips.localPosition = _hipsLocalPosition;
+        _hips.rotation = Quaternion.identity;
 
         foreach (Collider collider in _ragdollColliders)
         {
-            collider.enabled = false;
             if (collider.attachedRigidbody)
             {
                 collider.attachedRigidbody.linearVelocity = Vector3.zero;
@@ -309,6 +360,7 @@ public class PlayerController : NetworkBehaviour
 
                 collider.attachedRigidbody.isKinematic = true;
             }
+            collider.enabled = false;
         }
 
         if (_cameraController) _cameraController.SetPerspective(CameraController.Perspective.FirstPerson);
@@ -316,14 +368,17 @@ public class PlayerController : NetworkBehaviour
         IsRagdoll = false;
     }
 
+    [ClientRpc]
+    public void DisableRagdollClientRpc() => DisableRagdoll();
+
     private IEnumerator _ragdoll;
     private IEnumerator Ragdoll()
     {
         _ragdollTime = _maxRagdollTime;
         while (_ragdollTime > 0f)
         {
-            yield return null;
-            _ragdollTime -= Time.deltaTime;
+            yield return new WaitForFixedUpdate();
+            _ragdollTime -= Time.fixedDeltaTime;
             
             if (_maxRagdollTime - _ragdollTime > _minRagdollTime &&
                 IsNotRagdollVelocityThreshold()) DisableRagdoll();
@@ -334,13 +389,43 @@ public class PlayerController : NetworkBehaviour
 
     private bool IsNotRagdollVelocityThreshold()
     {
-        return _rigidbody.linearVelocity.magnitude < _ragdollLinearVelocityThreshold &&
-            _rigidbody.angularVelocity.magnitude < _ragdollAngularVelocityThreshold;
+        return GetHighestRagdollLinearVelocity() < _ragdollEndLinearVelocityThreshold &&
+            GetHighestRagdollAngularVelocity() < _ragdollEndAngularVelocityThreshold;
     }
 
     private void ReduceRagdollTime()
     {
+        if (!IsOwner) return;
+
         _ragdollTime -= _ragdollTimeReductionPerInput;
+    }
+
+    private float GetHighestRagdollLinearVelocity()
+    {
+        float value = 0f;
+        foreach (Collider collider in _ragdollColliders)
+        {
+            if (collider.attachedRigidbody)
+            {
+                float magnitude = collider.attachedRigidbody.linearVelocity.magnitude;
+                value = magnitude > value ? magnitude : value;
+            }
+        }
+        return value;
+    }
+
+    private float GetHighestRagdollAngularVelocity()
+    {
+        float value = 0f;
+        foreach (Collider collider in _ragdollColliders)
+        {
+            if (collider.attachedRigidbody)
+            {
+                float magnitude = collider.attachedRigidbody.angularVelocity.magnitude;
+                value = magnitude > value ? magnitude : value;
+            }
+        }
+        return value;
     }
 
     [ContextMenu("Test_ImpulseRagdoll")]
@@ -348,7 +433,43 @@ public class PlayerController : NetworkBehaviour
     {
         EnableRagdoll();
 
-        _rigidbody.AddForce(5f * Random.insideUnitSphere.normalized, ForceMode.Impulse);
+        foreach (Collider collider in _ragdollColliders)
+        {
+            collider.attachedRigidbody.AddForce(10f * Vector3.up, ForceMode.Impulse);
+        }
     }
     #endregion
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!IsOwner) return;
+
+        Vector3 impulse = collision.contacts[0].impulse;
+        if (impulse.magnitude >= _ragdollStartImpulseThreshold)
+        {
+            //if (IsServer)
+            //{
+            //    EnableRagdollClientRpc();
+            //    ApplyResolutionImpulseClientRpc(impulse);
+            //}
+            //else if (IsOwner)
+            //{
+
+            //}
+
+            EnableRagdoll();
+            ApplyResolutionImpulse(impulse);
+        }
+    }
+
+    public void ApplyResolutionImpulse(Vector3 impulse)
+    {
+        foreach (Collider collider in _ragdollColliders)
+        {
+            if (collider.attachedRigidbody) collider.attachedRigidbody.AddForce(-impulse, ForceMode.Impulse);
+        }
+    }
+
+    [ClientRpc]
+    public void ApplyResolutionImpulseClientRpc(Vector3 impulse) => ApplyResolutionImpulse(impulse);
 }

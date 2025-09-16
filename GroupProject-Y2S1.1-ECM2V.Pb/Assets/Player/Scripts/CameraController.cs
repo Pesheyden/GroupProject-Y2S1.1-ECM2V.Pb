@@ -77,7 +77,8 @@ public class CameraController : MonoBehaviour
     {
         if (!_target) return;
 
-        transform.position = _target.TransformPoint(_anchorOffset);
+        Vector3 offset = _anchorOffset.x * _target.right + _anchorOffset.y * _target.up + _anchorOffset.z * _target.forward;
+        transform.position = _target.position + offset;
     }
 
     private void RotateHorizontalJoint()
@@ -115,7 +116,7 @@ public class CameraController : MonoBehaviour
 
         void FirstPerson()
         {
-            _camera.transform.localPosition = Vector3.zero;
+            _camera.transform.localPosition = _firstPersonCameraOffset;
         }
 
         void ThirdPerson()
