@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Test/RagdollTest.unity
     guid: 949d3e1730e73234d87a2d4194727de9
+  - enabled: 1
+    path: Assets/Features/CaptureTheFlag/Test_CaptureTheFlag.unity
+    guid: 02fdcf15e5550ec40ad031fcb3c52355
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 4e28c8ef96e143a47a058a35ec94776a, type: 2}
