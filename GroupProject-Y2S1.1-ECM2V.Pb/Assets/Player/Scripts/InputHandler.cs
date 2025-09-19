@@ -9,10 +9,6 @@ public class InputHandler : MonoBehaviour
 
     private PlayerInput _playerInput;
 
-    [Space]
-    [SerializeField] private CameraController _cameraController;
-    public CameraController CameraController => _cameraController;
-
     public delegate void InputEvent();
     public delegate void InputEvent<T>(T parameter);
 
@@ -41,9 +37,14 @@ public class InputHandler : MonoBehaviour
     public event InputEvent<Vector2> OnCameraMoveCanceled;
 
     private InputAction _stretch;
-    public event InputEvent OnStretchStarted;
-    public event InputEvent OnStretchPerformed;
-    public event InputEvent OnStretchCanceled;
+    public event InputEvent<int> OnStretchStarted;
+    public event InputEvent<int> OnStretchPerformed;
+    public event InputEvent<int> OnStretchCanceled;
+
+    private InputAction _stretch1;
+    public event InputEvent<int> OnStretch1Started;
+    public event InputEvent<int> OnStretch1Performed;
+    public event InputEvent<int> OnStretch1Canceled;
 
     private void Reset()
     {
@@ -52,6 +53,8 @@ public class InputHandler : MonoBehaviour
 
     private void Awake()
     {
+        if (_playerInput) _playerInput = GetComponent<PlayerInput>();
+
         SetInstance();
         Initialize();
     }
@@ -96,10 +99,14 @@ public class InputHandler : MonoBehaviour
     {
         InputAction action = context.action;
 
-        if (context.started) OnAnyStarted?.Invoke();
-        if (context.performed) OnAnyPerformed?.Invoke();
-        if (context.canceled) OnAnyCanceled?.Invoke();
-
+        if (action == _move ||
+            action == _jump)
+        {
+            if (context.started) OnAnyStarted?.Invoke();
+            if (context.performed) OnAnyPerformed?.Invoke();
+            if (context.canceled) OnAnyCanceled?.Invoke();
+        }
+        
         if (action == _move)
         {
             if (context.started) OnMoveStarted?.Invoke(context.ReadValue<Vector2>());
@@ -130,9 +137,16 @@ public class InputHandler : MonoBehaviour
 
         if (action == _stretch)
         {
-            if (context.started) OnStretchStarted?.Invoke();
-            if (context.performed) OnStretchPerformed?.Invoke();
-            if (context.canceled) OnStretchCanceled?.Invoke();
+            if (context.started) OnStretchStarted?.Invoke(0);
+            if (context.performed) OnStretchPerformed?.Invoke(0);
+            if (context.canceled) OnStretchCanceled?.Invoke(0);
+        }
+
+        if (action == _stretch1)
+        {
+            if (context.started) OnStretch1Started?.Invoke(1);
+            if (context.performed) OnStretch1Performed?.Invoke(1);
+            if (context.canceled) OnStretch1Canceled?.Invoke(1);
         }
     }
 
@@ -151,5 +165,6 @@ public class InputHandler : MonoBehaviour
         _interact = gameplay.FindAction("Interact");
         _cameraMove = gameplay.FindAction("Camera Move");
         _stretch = gameplay.FindAction("Stretch");
+        _stretch1 = gameplay.FindAction("Stretch1");
     }
 }
