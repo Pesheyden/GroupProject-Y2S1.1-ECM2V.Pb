@@ -1,13 +1,14 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-namespace SinglePlayer.Player
+namespace MultiPlayer.Player
 {
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Player))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : NetworkBehaviour
     {
-        private Player _player;
+        [SerializeField] private Player _player;
 
         private Vector2 _moveInput;
         [Space][SerializeField] private float _moveSpeed = 5f;
@@ -25,7 +26,15 @@ namespace SinglePlayer.Player
             _player = GetComponent<Player>();
         }
 
-        private void Awake()
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            enabled = IsOwner;
+
+            NetworkAwake();
+        }
+
+        private void NetworkAwake()
         {
             if (!_player) _player = GetComponent<Player>();
         }
