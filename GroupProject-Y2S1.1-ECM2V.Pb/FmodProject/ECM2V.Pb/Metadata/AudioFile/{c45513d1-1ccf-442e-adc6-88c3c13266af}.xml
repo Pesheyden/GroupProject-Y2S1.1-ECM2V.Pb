@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{c45513d1-1ccf-442e-adc6-88c3c13266af}">
+		<property name="assetPath">
+			<value>Smash into the wall.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.875</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{b3c3fc50-2f20-49ca-b3a1-05e6dd99f80c}</destination>
+		</relationship>
+	</object>
+</objects>
