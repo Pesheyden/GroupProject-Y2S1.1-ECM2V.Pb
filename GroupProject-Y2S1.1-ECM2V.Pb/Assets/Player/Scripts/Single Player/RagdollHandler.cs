@@ -65,6 +65,8 @@ namespace SinglePlayer.Player
             foreach (Collider collider in _colliders)
             {
                 collider.enabled = true;
+                if(!collider.gameObject.activeSelf)
+                    collider.gameObject.SetActive(true);
 
                 Rigidbody rigidbody = collider.attachedRigidbody;
                 if (rigidbody)
