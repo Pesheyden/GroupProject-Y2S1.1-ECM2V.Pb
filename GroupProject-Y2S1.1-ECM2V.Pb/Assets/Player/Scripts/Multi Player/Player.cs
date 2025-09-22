@@ -38,7 +38,7 @@ namespace MultiPlayer.Player
         {
             base.OnNetworkSpawn();
             Debug.Log($"{this}: OnNetworkSpawn");
-
+            
             NetworkAwake();
         }
 

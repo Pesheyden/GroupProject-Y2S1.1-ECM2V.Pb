@@ -4,8 +4,10 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
+using Unity.Services.Vivox;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 
 public class LobbyManager : MonoBehaviour {
 
@@ -15,6 +17,8 @@ public class LobbyManager : MonoBehaviour {
 
     public static bool IsHost { get; private set; }
     public static string RelayJoinCode { get; private set; }
+    
+    public Lobby JoinedLobby { get; private set; }
 
 
 
@@ -59,13 +63,14 @@ public class LobbyManager : MonoBehaviour {
     private float heartbeatTimer;
     private float lobbyPollTimer;
     private float refreshLobbyListTimer = 5f;
-    private Lobby joinedLobby;
+
     private string playerName;
     private bool alreadyStartedGame;
 
 
     private void Awake() {
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Update() {
@@ -90,6 +95,8 @@ public class LobbyManager : MonoBehaviour {
         };
 
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+        await VivoxService.Instance.InitializeAsync();
     }
 
     private void HandleRefreshLobbyList() {
@@ -112,32 +119,31 @@ public class LobbyManager : MonoBehaviour {
                 heartbeatTimer = heartbeatTimerMax;
 
                 Debug.Log("Heartbeat");
-                await LobbyService.Instance.SendHeartbeatPingAsync(joinedLobby.Id);
+                await LobbyService.Instance.SendHeartbeatPingAsync(JoinedLobby.Id);
             }
         }
     }
 
     private async void HandleLobbyPolling() {
-        if (joinedLobby != null) {
+        if (JoinedLobby != null) {
             lobbyPollTimer -= Time.deltaTime;
             if (lobbyPollTimer < 0f) {
                 float lobbyPollTimerMax = 1.1f;
                 lobbyPollTimer = lobbyPollTimerMax;
 
-                joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
+                JoinedLobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
 
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
 
                 if (!IsLobbyHost()) {
-                    if (joinedLobby.Data[KEY_RELAY_JOIN_CODE].Value != "") {
-                        JoinGame(joinedLobby.Data[KEY_RELAY_JOIN_CODE].Value);
+                    if (JoinedLobby.Data[KEY_RELAY_JOIN_CODE].Value != "") {
+                        JoinGame(JoinedLobby.Data[KEY_RELAY_JOIN_CODE].Value);
                     }
                 }
 
                 if (!alreadyStartedGame) {
                     if (IsLobbyHost()) {
-                        if (joinedLobby.Players.Count == 2) {
-                            // Two players have joined, start game
+                        if (JoinedLobby.Players.Count == JoinedLobby.MaxPlayers) {
                             StartGame();
                         }
                     }
@@ -148,25 +154,25 @@ public class LobbyManager : MonoBehaviour {
                     // Player was kicked out of this lobby
                     Debug.Log("Kicked from Lobby!");
 
-                    OnKickedFromLobby?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+                    OnKickedFromLobby?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
 
-                    joinedLobby = null;
+                    JoinedLobby = null;
                 }
             }
         }
     }
 
     public Lobby GetJoinedLobby() {
-        return joinedLobby;
+        return JoinedLobby;
     }
 
     public bool IsLobbyHost() {
-        return joinedLobby != null && joinedLobby.HostId == AuthenticationService.Instance.PlayerId;
+        return JoinedLobby != null && JoinedLobby.HostId == AuthenticationService.Instance.PlayerId;
     }
 
     private bool IsPlayerInLobby() {
-        if (joinedLobby != null && joinedLobby.Players != null) {
-            foreach (Player player in joinedLobby.Players) {
+        if (JoinedLobby != null && JoinedLobby.Players != null) {
+            foreach (Player player in JoinedLobby.Players) {
                 if (player.Id == AuthenticationService.Instance.PlayerId) {
                     // This player is in this lobby
                     return true;
@@ -186,7 +192,7 @@ public class LobbyManager : MonoBehaviour {
     public void ChangeGameMode() {
         if (IsLobbyHost()) {
             GameMode gameMode =
-                Enum.Parse<GameMode>(joinedLobby.Data[KEY_GAME_MODE].Value);
+                Enum.Parse<GameMode>(JoinedLobby.Data[KEY_GAME_MODE].Value);
 
             switch (gameMode) {
                 default:
@@ -216,7 +222,9 @@ public class LobbyManager : MonoBehaviour {
 
         Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 
-        joinedLobby = lobby;
+        JoinedLobby = lobby;
+        Channel3DProperties props = new Channel3DProperties(); 
+        await VivoxService.Instance.JoinPositionalChannelAsync(lobby.Name, ChatCapability.AudioOnly, props);
 
         OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
 
@@ -258,8 +266,9 @@ public class LobbyManager : MonoBehaviour {
         Lobby lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, new JoinLobbyByCodeOptions {
             Player = player
         });
-
-        joinedLobby = lobby;
+        Channel3DProperties props = new Channel3DProperties(); 
+        await VivoxService.Instance.JoinPositionalChannelAsync(lobby.Name, ChatCapability.AudioOnly, props);
+        JoinedLobby = lobby;
 
         OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
     }
@@ -267,17 +276,18 @@ public class LobbyManager : MonoBehaviour {
     public async void JoinLobby(Lobby lobby) {
         Player player = GetPlayer();
 
-        joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobby.Id, new JoinLobbyByIdOptions {
+        JoinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobby.Id, new JoinLobbyByIdOptions {
             Player = player
         });
-
+        Channel3DProperties props = new Channel3DProperties(); 
+        await VivoxService.Instance.JoinPositionalChannelAsync(lobby.Name, ChatCapability.AudioOnly, props);
         OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
     }
 
     public async void UpdatePlayerName(string playerName) {
         this.playerName = playerName;
 
-        if (joinedLobby != null) {
+        if (JoinedLobby != null) {
             try {
                 UpdatePlayerOptions options = new UpdatePlayerOptions();
 
@@ -291,10 +301,10 @@ public class LobbyManager : MonoBehaviour {
 
                 string playerId = AuthenticationService.Instance.PlayerId;
 
-                Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, playerId, options);
-                joinedLobby = lobby;
+                Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(JoinedLobby.Id, playerId, options);
+                JoinedLobby = lobby;
 
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
             } catch (LobbyServiceException e) {
                 Debug.Log(e);
             }
@@ -302,7 +312,7 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public async void UpdatePlayerCharacter(PlayerCharacter playerCharacter) {
-        if (joinedLobby != null) {
+        if (JoinedLobby != null) {
             try {
                 UpdatePlayerOptions options = new UpdatePlayerOptions();
 
@@ -316,10 +326,10 @@ public class LobbyManager : MonoBehaviour {
 
                 string playerId = AuthenticationService.Instance.PlayerId;
 
-                Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, playerId, options);
-                joinedLobby = lobby;
+                Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(JoinedLobby.Id, playerId, options);
+                JoinedLobby = lobby;
 
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
             } catch (LobbyServiceException e) {
                 Debug.Log(e);
             }
@@ -331,8 +341,9 @@ public class LobbyManager : MonoBehaviour {
             QuickJoinLobbyOptions options = new QuickJoinLobbyOptions();
 
             Lobby lobby = await LobbyService.Instance.QuickJoinLobbyAsync(options);
-            joinedLobby = lobby;
-
+            JoinedLobby = lobby;
+            Channel3DProperties props = new Channel3DProperties(); 
+            await VivoxService.Instance.JoinPositionalChannelAsync(lobby.Name, ChatCapability.AudioOnly, props);
             OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
         } catch (LobbyServiceException e) {
             Debug.Log(e);
@@ -340,11 +351,14 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public async void LeaveLobby() {
-        if (joinedLobby != null) {
+        if (JoinedLobby != null) {
             try {
-                await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
+                await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, AuthenticationService.Instance.PlayerId);
 
-                joinedLobby = null;
+                await VivoxService.Instance.LeaveChannelAsync(JoinedLobby.Name);
+
+                JoinedLobby = null;
+
 
                 OnLeftLobby?.Invoke(this, EventArgs.Empty);
             } catch (LobbyServiceException e) {
@@ -356,7 +370,8 @@ public class LobbyManager : MonoBehaviour {
     public async void KickPlayer(string playerId) {
         if (IsLobbyHost()) {
             try {
-                await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, playerId);
+                await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, playerId);
+                await VivoxService.Instance.LeaveChannelAsync(JoinedLobby.Name);
             } catch (LobbyServiceException e) {
                 Debug.Log(e);
             }
@@ -367,15 +382,15 @@ public class LobbyManager : MonoBehaviour {
         try {
             Debug.Log("UpdateLobbyGameMode " + gameMode);
             
-            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions {
+            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(JoinedLobby.Id, new UpdateLobbyOptions {
                 Data = new Dictionary<string, DataObject> {
                     { KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString()) }
                 }
             });
 
-            joinedLobby = lobby;
+            JoinedLobby = lobby;
 
-            OnLobbyGameModeChanged?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+            OnLobbyGameModeChanged?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
         } catch (LobbyServiceException e) {
             Debug.Log(e);
         }
@@ -385,19 +400,19 @@ public class LobbyManager : MonoBehaviour {
         try {
             Debug.Log("StartGame");
 
-            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions {
+            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(JoinedLobby.Id, new UpdateLobbyOptions {
                 Data = new Dictionary<string, DataObject> {
                     { KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Public, "1") }
                 }
             });
 
-            joinedLobby = lobby;
+            JoinedLobby = lobby;
 
             IsHost = true;
             alreadyStartedGame = true;
-           // SceneManager.LoadScene(1);
+            SceneManager.LoadScene(1);
 
-            OnLobbyStartGame?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+            OnLobbyStartGame?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
         } catch (LobbyServiceException e) {
             Debug.Log(e);
         }
@@ -414,20 +429,20 @@ public class LobbyManager : MonoBehaviour {
         RelayJoinCode = relayJoinCode;
         SceneManager.LoadScene(1);
         alreadyStartedGame = true;
-        OnLobbyStartGame?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+        OnLobbyStartGame?.Invoke(this, new LobbyEventArgs { lobby = JoinedLobby });
     }
 
     public async void SetRelayJoinCode(string relayJoinCode) {
         try {
             Debug.Log("SetRelayJoinCode " + relayJoinCode);
 
-            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions {
+            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(JoinedLobby.Id, new UpdateLobbyOptions {
                 Data = new Dictionary<string, DataObject> {
                     { KEY_RELAY_JOIN_CODE, new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode) }
                 }
             });
 
-            joinedLobby = lobby;
+            JoinedLobby = lobby;
         } catch (LobbyServiceException e) {
             Debug.Log(e);
         }

@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.Netcode;
+using Unity.Services.Vivox;
 using UnityEngine;
 
 namespace MultiPlayer.Player
@@ -75,6 +76,16 @@ namespace MultiPlayer.Player
         private void Update()
         {
             Turn();
+            StartCoroutine(VivoxUpdate());
+        }
+
+        private IEnumerator VivoxUpdate()
+        {
+            while (true)
+            {
+                VivoxService.Instance.Set3DPosition(gameObject,LobbyManager.Instance.JoinedLobby.Name);
+                yield return new WaitForSeconds(0.2f);
+            }
         }
 
         private void Turn()
