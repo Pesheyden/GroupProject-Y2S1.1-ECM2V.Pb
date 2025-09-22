@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Flag : MonoBehaviour
+public class Flag : NetworkBehaviour
 {
 
     private static Flag _instance;
@@ -13,7 +14,8 @@ public class Flag : MonoBehaviour
     private Vector3 _startPosition;
     private Quaternion _startRotation;
     private Vector3 _startScale;
-    private Transform _parent;
+    private Transform _startTarget;
+    private Transform _target;
     public ulong PlayerFlagOwner = ulong.MaxValue;
 
     private void Awake()
@@ -22,31 +24,49 @@ public class Flag : MonoBehaviour
         _startPosition = transform.position;
         _startRotation = transform.rotation;
         _startScale = transform.localScale;
-        _parent = transform.parent;
+        _startTarget = transform.parent;
+        _target = _startTarget;
     }
 
-    public void ResetFlag()
+    private void Update()
     {
-        transform.parent = _parent;
+        transform.position = _target.position;
+    }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    public void Grab_ServerRpc(NetworkBehaviourReference  playerFlagHandlerReference)
+    {
+        if (playerFlagHandlerReference.TryGet<PlayerFlagHandler>(out var playerFlagHandler))
+        {
+            Debug.Log($"Grab: {playerFlagHandler.OwnerClientId}");
+            PlayerFlagOwner = playerFlagHandler.OwnerClientId;
+            _target = playerFlagHandler.FlagParent;
+        }
+
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void TrySubmittingTheFlag_ServerRpc(ulong clientId)
+    {
+        if(clientId != PlayerFlagOwner)
+            return;
+        ResetFlag();
+        AddScore_ClientRPC(new ClientRpcParams()
+            { Send = new ClientRpcSendParams() { TargetClientIds = new List<ulong>() { clientId } } });
+    }
+
+    [ClientRpc]
+    private void AddScore_ClientRPC(ClientRpcParams rpcParams)
+    {
+        ScoreRedirect.Instance.AddScore(1);
+    }
+    private void ResetFlag()
+    {
+        _target = _startTarget;
         transform.position = _startPosition;
         transform.rotation = _startRotation;
         transform.localScale = _startScale;
         PlayerFlagOwner = ulong.MaxValue;
     }
-
-    [ServerRpc]
-    public void GrabServerRpc(PlayerFlagHandler playerFlagHandler)
-    {
-        PlayerFlagOwner = playerFlagHandler.OwnerClientId;
-        transform.parent = playerFlagHandler.FlagParent;
-    }
-
-    [ServerRpc]
-    public void TrySubmittingServerRpc(ulong clientId)
-    {
-        if(clientId != PlayerFlagOwner)
-            return;
-        ResetFlag();
-    }
-
 }

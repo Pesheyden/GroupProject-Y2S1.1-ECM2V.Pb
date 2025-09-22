@@ -35,6 +35,7 @@ namespace SinglePlayer.Player
 
         private void Awake()
         {
+            _playerCamera = FindAnyObjectByType<PlayerCamera>();
             _playerCamera.SetTarget(_playerCameraTarget);
         }
 

@@ -16,13 +16,12 @@ public class ScoreLocalManager : NetworkBehaviour
         {
             return;
         }
-
-        Score.Value = Random.Range(0, 100);
-        Debug.Log(OwnerClientId + " " + Score.Value);
     }
 
     public void AddScore(int amount)
     {
         Score.Value += amount;
+        if(Score.Value >= GameManager.Instance.WinScore)
+            GameManager.Instance.GameEnd_ServerRpc(OwnerClientId);
     }
 }

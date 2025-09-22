@@ -280,7 +280,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerFlagHandler
   ShowTopMostFoldoutHeaderGroup: 1
-  FlagParent: {fileID: 0}
+  FlagParent: {fileID: 3067967865616327507}
 --- !u!1 &6988289105698497008
 GameObject:
   m_ObjectHideFlags: 0

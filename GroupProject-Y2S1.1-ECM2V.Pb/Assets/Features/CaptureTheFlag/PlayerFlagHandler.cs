@@ -7,15 +7,17 @@ public class PlayerFlagHandler : NetworkBehaviour
     public Transform FlagParent;
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"OnTriggerEnter1 {OwnerClientId}");
         if(!IsOwner)
             return;
+        Debug.Log($"OnTriggerEnter2 {OwnerClientId}");
         if (other.CompareTag("Flag"))
         {
-            Flag.Instance.GrabServerRpc(this);
+            Flag.Instance.Grab_ServerRpc(this);
         }
         else if(other.CompareTag("FlagPoint"))
         {
-            Flag.Instance.TrySubmittingServerRpc(OwnerClientId);
+            Flag.Instance.TrySubmittingTheFlag_ServerRpc(OwnerClientId);
         }
     }
 }

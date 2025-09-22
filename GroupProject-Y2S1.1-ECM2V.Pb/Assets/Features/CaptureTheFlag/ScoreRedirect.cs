@@ -1,3 +1,4 @@
+using System;
 using NaughtyAttributes;
 using TMPro;
 using Unity.Netcode;
@@ -5,9 +6,18 @@ using UnityEngine;
 
 public class ScoreRedirect : MonoBehaviour
 {
+    private static ScoreRedirect _instance;
+    public static ScoreRedirect Instance => _instance; 
+    
     [SerializeField] private TextMeshProUGUI[] _texts;
 
     [SerializeField] private ScoreLocalManager[] _scoreLocalManagers;
+
+    private void Awake()
+    {
+        _instance = this;
+    }
+
     void Start()
     {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -24,10 +34,11 @@ public class ScoreRedirect : MonoBehaviour
         //_scoreLocalManagers[obj] = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject.GetComponentInChildren<ScoreLocalManager>();
         foreach (var scoreManager in _scoreLocalManagers)
         {
+            scoreManager.Score.OnValueChanged -= OnValueChanged;
             scoreManager.Score.OnValueChanged += OnValueChanged;
         }
 
-        Debug.Log($"Client{obj} was connected");
+        OnValueChanged(0,0);
     }
 
     private void OnValueChanged(int previousValue, int newValue)
