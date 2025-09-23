@@ -9,7 +9,7 @@ namespace MultiPlayer.Player
         [SerializeField] private PlayerCamera _playerCameraPrefab;
         private PlayerCamera _playerCamera;
         public PlayerCamera PlayerCamera => _playerCamera;
-        [SerializeField] private Transform _playerCameraTarget;
+        public Transform playerCameraTarget;
 
         [Space]
         [SerializeField] private Rigidbody _rigidbody;
@@ -31,6 +31,9 @@ namespace MultiPlayer.Player
         [SerializeField] private ArmController _armController;
         public ArmController ArmController => _armController;
 
+        [SerializeField] private SquishHandler _squishHandler;
+        public SquishHandler SquishHandler => _squishHandler;
+
         [Space]
         [SerializeField] private PlayerFlagHandler _playerFlagHandler;
         public PlayerFlagHandler PlayerFlagHandler => _playerFlagHandler;
@@ -50,23 +53,34 @@ namespace MultiPlayer.Player
         {
             if (!IsOwner) return;
 
-            _playerCamera = Instantiate(_playerCameraPrefab, _playerCameraTarget.position, Quaternion.identity);
-            _playerCamera.SetTarget(_playerCameraTarget);
+            _playerCamera = Instantiate(_playerCameraPrefab, playerCameraTarget.position, Quaternion.identity);
+            _playerCamera.SetTarget(playerCameraTarget);
         }
 
         private void OnCollisionEnter(Collision collision)
         {
             if (!IsOwner) return;
 
-            AddImpulseToRagdoll(collision);
+            if (_squishHandler && _squishHandler.enabled)
+            {
+                if (!_squishHandler.AddContact(collision)) AddImpulseToRagdoll(collision);
+            }
+            else AddImpulseToRagdoll(collision);
         }
 
         private void AddImpulseToRagdoll(Collision collision)
         {
             if (!IsOwner) return;
 
-            Vector3 impulse = collision.contacts[0].impulse;
+            Vector3 impulse = collision.GetContact(0).impulse;
             _ragdollHandler.AddImpulse(-impulse);
+        }
+
+        private void OnCollisionExit(Collision collision)
+        {
+            if (!IsOwner) return;
+
+            if (_squishHandler && _squishHandler.enabled) _squishHandler.RemoveContact(collision);
         }
     }
 

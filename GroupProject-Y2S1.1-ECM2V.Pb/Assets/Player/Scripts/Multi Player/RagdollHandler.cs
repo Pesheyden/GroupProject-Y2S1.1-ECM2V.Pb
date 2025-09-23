@@ -58,6 +58,8 @@ namespace MultiPlayer.Player
         private void OnDisable()
         {
             UnsubscribeFromInputActions();
+
+            DisableRagdoll();
         }
 
         private void SubscribeToInputActions()
