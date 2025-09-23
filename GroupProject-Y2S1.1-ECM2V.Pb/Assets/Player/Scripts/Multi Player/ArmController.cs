@@ -215,10 +215,14 @@ namespace MultiPlayer.Player
         {
             if (!IsOwner) return;
 
-            Debug.Log($"{this}: Grab({i})");
-
             if (_isGrabbed[i] || _isBroken[i]) return;
             if (!_aimHits[i].collider) return;
+
+            if (_aimHits[i].collider.CompareTag("Flag"))
+            {
+                Flag.Instance.Grab_ServerRpc(_player.PlayerFlagHandler);
+                return;
+            }
 
             _isGrabbed[i] = true;
 
