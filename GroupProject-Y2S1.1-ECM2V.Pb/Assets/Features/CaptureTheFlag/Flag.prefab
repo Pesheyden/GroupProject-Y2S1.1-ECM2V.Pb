@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8740607132370743677}
   - component: {fileID: 8962504453377144900}
   - component: {fileID: 4488611458822349114}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Flag
   m_Icon: {fileID: 0}
@@ -105,11 +105,11 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 10, y: 1, z: 10}
+  m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3902180492448035354
 GameObject:
@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 4511018208598754831}
   - component: {fileID: 5089005509755776871}
   - component: {fileID: 5740276776966008466}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Flag
   m_TagString: Flag
   m_Icon: {fileID: 0}
@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3020769961
+  GlobalObjectIdHash: 3479817340
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -229,4 +229,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96d5839126a07cd4caf5e5943046764c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Flag
+  ShowTopMostFoldoutHeaderGroup: 1
   PlayerFlagOwner: 18446744073709551615

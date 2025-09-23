@@ -32,6 +32,10 @@ namespace MultiPlayer.Player
         public ArmController ArmController => _armController;
 
         [Space]
+        [SerializeField] private PlayerFlagHandler _playerFlagHandler;
+        public PlayerFlagHandler PlayerFlagHandler => _playerFlagHandler;
+
+        [Space]
         public NetworkVariable<Color> color = new(Color.gray, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
         public override void OnNetworkSpawn()
