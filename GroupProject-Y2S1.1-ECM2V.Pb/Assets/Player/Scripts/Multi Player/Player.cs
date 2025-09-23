@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MultiPlayer.Player
 {
-    [DefaultExecutionOrder(100)]
+    [DefaultExecutionOrder(99)]
     public class Player : NetworkBehaviour
     {
         [SerializeField] private PlayerCamera _playerCameraPrefab;
