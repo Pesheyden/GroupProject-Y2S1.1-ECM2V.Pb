@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Features/CaptureTheFlag/Test_CaptureTheFlag.unity
     guid: 02fdcf15e5550ec40ad031fcb3c52355
+  - enabled: 1
+    path: Assets/Scenes/Test/Test_MultiPlayer.unity
+    guid: 2d52fcf89c30b3f4794022580e4ee938
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 4e28c8ef96e143a47a058a35ec94776a, type: 2}
