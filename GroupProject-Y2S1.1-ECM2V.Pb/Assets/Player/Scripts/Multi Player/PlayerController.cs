@@ -21,6 +21,8 @@ namespace MultiPlayer.Player
         [Space]
         [SerializeField] private LayerMask _groundMask = ~0;
         [SerializeField] private float _slopeTolerance = 50f;
+        
+        private float _vivoxTimer;
 
         private void Reset()
         {
@@ -38,6 +40,7 @@ namespace MultiPlayer.Player
         private void NetworkAwake()
         {
             if (!_player) _player = GetComponent<Player>();
+            Spawner.Instance.Spawn_ServerRpc(transform);
         }
 
         private void OnEnable()
@@ -73,18 +76,30 @@ namespace MultiPlayer.Player
             _moveInput = input;
         }
 
+
         private void Update()
         {
             Turn();
-            StartCoroutine(VivoxUpdate());
+            
+            _vivoxTimer -= Time.deltaTime;
+            
+            if (_vivoxTimer <= 0)
+            {
+                VivoxService.Instance.Set3DPosition(gameObject, LobbyManager.Instance.JoinedLobby.Name);
+                _vivoxTimer += 0.3f;
+            }
+
+
+
+            //StartCoroutine(VivoxUpdate());
+
         }
 
         private IEnumerator VivoxUpdate()
         {
             while (true)
             {
-                VivoxService.Instance.Set3DPosition(gameObject,LobbyManager.Instance.JoinedLobby.Name);
-                yield return new WaitForSeconds(0.2f);
+                VivoxService.Instance.Set3DPosition(gameObject, LobbyManager.Instance.JoinedLobby.Name);
             }
         }
 
@@ -107,6 +122,14 @@ namespace MultiPlayer.Player
             SnapToGround();
 
             Move();
+
+            UpdateAnimatorValues();
+        }
+
+        private void UpdateAnimatorValues()
+        {
+            _player.Animator.SetBool("IsGrounded", IsGrounded);
+            _player.Animator.SetFloat("Blend", _moveSpeed / _player.Rigidbody.linearVelocity.sqrMagnitude);
         }
 
         private void Move()

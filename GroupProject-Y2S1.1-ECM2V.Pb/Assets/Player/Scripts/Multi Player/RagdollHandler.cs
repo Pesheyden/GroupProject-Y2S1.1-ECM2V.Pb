@@ -34,19 +34,18 @@ namespace MultiPlayer.Player
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            if (!_player) _player = GetComponent<Player>();
             if (!IsOwner)
             {
-                DisableRagdoll();
                 enabled = false;
+                return;
             }
-
+            DisableRagdoll();
             NetworkAwake();
         }
 
         private void NetworkAwake()
         {
-            if (!_player) _player = GetComponent<Player>();
-
             _hipsLocalPosition = _hipsCollider.transform.localPosition;
         }
 
@@ -113,6 +112,9 @@ namespace MultiPlayer.Player
 
             IsRagdoll = false;
 
+            Debug.Log(_player.OwnerClientId);
+            Debug.Log(_player.PlayerCamera);
+            
             _player.PlayerCamera.SetPerspective(PlayerCamera.Perspective.FirstPerson);
 
             _player.Collider.enabled = true;
@@ -145,6 +147,7 @@ namespace MultiPlayer.Player
 
         private void ResyncPosition()
         {
+            Debug.Log("resync");
             Transform hips = _hipsCollider.transform;
 
             transform.position = hips.position;
