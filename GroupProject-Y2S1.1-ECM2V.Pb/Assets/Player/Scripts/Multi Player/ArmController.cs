@@ -234,6 +234,19 @@ namespace MultiPlayer.Player
             _baseLengths[i] = (_anchors[i].position - _player.Rigidbody.position).magnitude;
 
             _grabbedRigidbodies[i] = _aimHits[i].rigidbody;
+
+            StartStretchSFX_ServerRpc();
+
+            InstantiateStickingParticleSystem_ServerRpc(i);
+        }
+
+        [ServerRpc]
+        private void InstantiateStickingParticleSystem_ServerRpc(int i) => InstantiateStickingParticleSystem_ClientRpc(i);
+
+        [ClientRpc]
+        private void InstantiateStickingParticleSystem_ClientRpc(int i)
+        {
+            ParticleSystem sticking = Instantiate(_player.particleSystemPrefabList.Sticking, _anchors[i].position, Quaternion.identity);
         }
 
         public void Release(int i)
@@ -320,19 +333,28 @@ namespace MultiPlayer.Player
         {
             if (!IsOwner) return;
 
-            if (_armPrefabs == null || _armPrefabs.Length <= i || _armPrefabs[i] == null) return;
+            if (!(_armPrefabs == null || _armPrefabs.Length <= i || _armPrefabs[i] == null)) InstantiateArm_ServerRpc(i, impulse);
 
-            InstantiateArmServerRpc(i, impulse);
+            InstantiateRippingParticleSystem_ServerRpc(i);
         }
 
         [ServerRpc]
-        private void InstantiateArmServerRpc(int i, Vector3 impulse)
+        private void InstantiateArm_ServerRpc(int i, Vector3 impulse)
         {
             Rigidbody arm = Instantiate(_armPrefabs[i], _arms[i].position, _arms[i].rotation);
             arm.AddForce(-impulse, ForceMode.Impulse);
 
             NetworkObject armNetworkObject = arm.GetComponent<NetworkObject>();
             if (armNetworkObject) armNetworkObject.Spawn(true);
+        }
+
+        [ServerRpc]
+        private void InstantiateRippingParticleSystem_ServerRpc(int i) => InstantiateRippingParticleSystem_ClientRpc(i);
+
+        [ClientRpc]
+        private void InstantiateRippingParticleSystem_ClientRpc(int i)
+        {
+            ParticleSystem ripping = Instantiate(_player.particleSystemPrefabList.Ripping, _arms[i].position, Quaternion.identity);
         }
 
         private void StartRegenerate(int i)
@@ -395,6 +417,17 @@ namespace MultiPlayer.Player
                 _lineRenderers[i].SetPosition(0, _lineStarts[i]);
                 _lineRenderers[i].SetPosition(1, _lineEnds[i]);
             }
+        }
+
+        [ServerRpc]
+        public void StartStretchSFX_ServerRpc() => StartStretchSFX_ClientRpc();
+
+        [ClientRpc]
+        public void StartStretchSFX_ClientRpc()
+        {
+            var instance = FMODUnity.RuntimeManager.CreateInstance("event:/Stretch");
+            instance.set3DAttributes(_player.GetATTRIBUTES_3D());
+            instance.start();
         }
     }
 

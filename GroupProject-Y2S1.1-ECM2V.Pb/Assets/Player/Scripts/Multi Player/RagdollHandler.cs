@@ -203,10 +203,37 @@ namespace MultiPlayer.Player
 
         public void AddImpulse(Vector3 impulse)
         {
-            if (impulse.magnitude > _impulseThreshold) EnableRagdoll();
+            if (impulse.magnitude > _impulseThreshold)
+            {
+                EnableRagdoll();
+
+                InstantiateSmashedParticleSystem_ServerRpc();
+
+                StartSmashIntoTheWallSFX_ServerRpc();
+            }
 
             Rigidbody rigidbody = _hipsCollider.attachedRigidbody;
             if (rigidbody) rigidbody.AddForce(impulse, ForceMode.Impulse);
+        }
+
+        [ServerRpc]
+        private void InstantiateSmashedParticleSystem_ServerRpc() => InstantiateSmashedParticleSystem_ClientRpc();
+
+        [ClientRpc]
+        private void InstantiateSmashedParticleSystem_ClientRpc()
+        {
+            ParticleSystem smashed = Instantiate(_player.particleSystemPrefabList.Sticking, _hipsCollider.transform.position, Quaternion.identity);
+        }
+
+        [ServerRpc]
+        public void StartSmashIntoTheWallSFX_ServerRpc() => StartSmashIntoTheWallSFX_ClientRpc();
+
+        [ClientRpc]
+        public void StartSmashIntoTheWallSFX_ClientRpc()
+        {
+            var instance = FMODUnity.RuntimeManager.CreateInstance("event:/Smash into the wall");
+            instance.set3DAttributes(_player.GetATTRIBUTES_3D());
+            instance.start();
         }
     }
 

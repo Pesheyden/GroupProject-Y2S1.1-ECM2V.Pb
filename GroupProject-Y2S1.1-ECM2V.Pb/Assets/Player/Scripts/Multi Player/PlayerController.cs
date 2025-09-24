@@ -262,6 +262,17 @@ namespace MultiPlayer.Player
         private float SlopeAngle => Vector3.Angle(Vector3.up, _groundHit.normal);
         private bool IsSlopeTolerable => SlopeAngle <= _slopeTolerance;
         #endregion
+
+        [ServerRpc]
+        public void StartWalkingSFD_ServerRpc() => StartWalkingSFX_ClientRpc();
+
+        [ClientRpc]
+        public void StartWalkingSFX_ClientRpc()
+        {
+            var instance = FMODUnity.RuntimeManager.CreateInstance("event:/Walking");
+            instance.set3DAttributes(_player.GetATTRIBUTES_3D());
+            instance.start();
+        }
     }
 
 }
