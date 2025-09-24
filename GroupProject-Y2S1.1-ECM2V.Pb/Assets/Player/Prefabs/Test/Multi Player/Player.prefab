@@ -400,6 +400,9 @@ MonoBehaviour:
   _playerFlagHandler: {fileID: 2879643515983951781}
   color:
     m_InternalValue: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  _bleepInterval: 10
+  _bleepIntervalDeviation: 2
+  particleSystemPrefabList: {fileID: 0}
 --- !u!114 &2385640951020185921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -478,7 +481,7 @@ MonoBehaviour:
   _spread: 0.5
   _layerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 125
   _reticles:
   - {fileID: 3384856054020812429}
   - {fileID: 8394439801460560839}

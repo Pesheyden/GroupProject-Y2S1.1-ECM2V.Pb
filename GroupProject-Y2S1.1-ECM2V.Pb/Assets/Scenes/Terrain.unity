@@ -23985,9 +23985,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreDisplayer
   _texts:
   - {fileID: 1072322049}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1095494265}
+  - {fileID: 1323082460}
+  - {fileID: 1152771953}
   _scoreLocalManagers: []
   amount: 0
 --- !u!4 &573459202
