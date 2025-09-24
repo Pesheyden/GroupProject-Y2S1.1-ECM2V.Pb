@@ -227,6 +227,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2480618604624020275}
   - {fileID: 4368608329228220993}
   - {fileID: 6111934396369763706}
   - {fileID: 2750808500300388056}
@@ -388,7 +389,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MultiPlayer.Player.Player
   ShowTopMostFoldoutHeaderGroup: 1
   _playerCameraPrefab: {fileID: 165876545296540095, guid: 9590f14531684fe498dcc9145a759283, type: 3}
-  playerCameraTarget: {fileID: 0}
+  playerCameraTarget: {fileID: 7695799462239725762}
   _rigidbody: {fileID: 7778970875226188918}
   _collider: {fileID: 4830439607992519835}
   _animator: {fileID: 4103989707288190777}
@@ -515,13 +516,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MultiPlayer.Player.SquishHandler
   ShowTopMostFoldoutHeaderGroup: 1
   _player: {fileID: 7290869566257249847}
-  _spriteRenderer: {fileID: 0}
+  _spriteRenderer: {fileID: 6732158436600574305}
   _modelRoot: {fileID: 4368608329228220993}
   _minSquishTime: 2
   _maxSquishTime: 4
   _squishTimePerInput: 0.2
   _dotThreshold: 0.9
   _impulseThreshold: 5
+--- !u!1 &4840759917197734085
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2480618604624020275}
+  - component: {fileID: 8249648503821547017}
+  m_Layer: 0
+  m_Name: ScoreManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2480618604624020275
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4840759917197734085}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 960, y: 536.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2654334889854604788}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8249648503821547017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4840759917197734085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fe33d5610dad2a4f8a58a3bb9bd6dce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &5693181295293442849
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,7 +860,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4115335468685609174
 Transform:
   m_ObjectHideFlags: 0
@@ -1391,6 +1437,11 @@ Transform:
 --- !u!135 &7672795779783787050 stripped
 SphereCollider:
   m_CorrespondingSourceObject: {fileID: 8196264007809022956, guid: b8b3e57da4a42b34f95c5a14c5524f7c, type: 3}
+  m_PrefabInstance: {fileID: 2001222953955998150}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7695799462239725762 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8145108996606873860, guid: b8b3e57da4a42b34f95c5a14c5524f7c, type: 3}
   m_PrefabInstance: {fileID: 2001222953955998150}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &7743794035540479634 stripped
