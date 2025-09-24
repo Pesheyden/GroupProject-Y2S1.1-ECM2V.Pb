@@ -129,6 +129,15 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Stretch1"",
+                    ""type"": ""Button"",
+                    ""id"": ""2739990d-472a-4686-8f29-8479284c1f02"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Interact"",
                     ""type"": ""Button"",
                     ""id"": ""b1e912fa-6cd9-4e09-b177-58290a0ca4cf"",
@@ -395,11 +404,33 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""f5cf2b5b-94f6-4f87-9ce4-a7b12fc25487"",
-                    ""path"": ""<XInputController>/rightTrigger"",
+                    ""path"": ""<XInputController>/leftTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Stretch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b08fc387-e692-4f30-89e6-92980993e584"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Stretch1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""08929214-61c9-4c70-aa9f-46a814712fce"",
+                    ""path"": ""<XInputController>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Stretch1"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -436,6 +467,7 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
         m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
         m_Gameplay_CameraMove = m_Gameplay.FindAction("Camera Move", throwIfNotFound: true);
         m_Gameplay_Stretch = m_Gameplay.FindAction("Stretch", throwIfNotFound: true);
+        m_Gameplay_Stretch1 = m_Gameplay.FindAction("Stretch1", throwIfNotFound: true);
         m_Gameplay_Interact = m_Gameplay.FindAction("Interact", throwIfNotFound: true);
     }
 
@@ -521,6 +553,7 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Jump;
     private readonly InputAction m_Gameplay_CameraMove;
     private readonly InputAction m_Gameplay_Stretch;
+    private readonly InputAction m_Gameplay_Stretch1;
     private readonly InputAction m_Gameplay_Interact;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
@@ -549,6 +582,10 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/Stretch".
         /// </summary>
         public InputAction @Stretch => m_Wrapper.m_Gameplay_Stretch;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/Stretch1".
+        /// </summary>
+        public InputAction @Stretch1 => m_Wrapper.m_Gameplay_Stretch1;
         /// <summary>
         /// Provides access to the underlying input action "Gameplay/Interact".
         /// </summary>
@@ -591,6 +628,9 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
             @Stretch.started += instance.OnStretch;
             @Stretch.performed += instance.OnStretch;
             @Stretch.canceled += instance.OnStretch;
+            @Stretch1.started += instance.OnStretch1;
+            @Stretch1.performed += instance.OnStretch1;
+            @Stretch1.canceled += instance.OnStretch1;
             @Interact.started += instance.OnInteract;
             @Interact.performed += instance.OnInteract;
             @Interact.canceled += instance.OnInteract;
@@ -617,6 +657,9 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
             @Stretch.started -= instance.OnStretch;
             @Stretch.performed -= instance.OnStretch;
             @Stretch.canceled -= instance.OnStretch;
+            @Stretch1.started -= instance.OnStretch1;
+            @Stretch1.performed -= instance.OnStretch1;
+            @Stretch1.canceled -= instance.OnStretch1;
             @Interact.started -= instance.OnInteract;
             @Interact.performed -= instance.OnInteract;
             @Interact.canceled -= instance.OnInteract;
@@ -688,6 +731,13 @@ public partial class @PlayerActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnStretch(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Stretch1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnStretch1(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Interact" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

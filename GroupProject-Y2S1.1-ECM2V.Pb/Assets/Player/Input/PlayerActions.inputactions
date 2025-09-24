@@ -43,6 +43,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Stretch1",
+                    "type": "Button",
+                    "id": "2739990d-472a-4686-8f29-8479284c1f02",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Interact",
                     "type": "Button",
                     "id": "b1e912fa-6cd9-4e09-b177-58290a0ca4cf",
@@ -309,11 +318,33 @@
                 {
                     "name": "",
                     "id": "f5cf2b5b-94f6-4f87-9ce4-a7b12fc25487",
-                    "path": "<XInputController>/rightTrigger",
+                    "path": "<XInputController>/leftTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Stretch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b08fc387-e692-4f30-89e6-92980993e584",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Stretch1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "08929214-61c9-4c70-aa9f-46a814712fce",
+                    "path": "<XInputController>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Stretch1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

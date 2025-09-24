@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.unity.2d.enhancers": "1.0.0",
+    "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.assistant": "1.0.0-pre.12",
     "com.unity.ai.generators": "1.0.0-pre.20",
     "com.unity.ai.inference": "2.3.0",
@@ -15,6 +17,9 @@
     "com.unity.performance.profile-analyzer": "1.2.3",
     "com.unity.probuilder": "6.0.7",
     "com.unity.render-pipelines.universal": "17.2.0",
+    "com.unity.services.lobby": "1.2.2",
+    "com.unity.services.relay": "1.0.5",
+    "com.unity.services.vivox": "16.7.0",
     "com.unity.test-framework": "1.5.1",
     "com.unity.timeline": "1.8.9",
     "com.unity.ugui": "2.0.0",
