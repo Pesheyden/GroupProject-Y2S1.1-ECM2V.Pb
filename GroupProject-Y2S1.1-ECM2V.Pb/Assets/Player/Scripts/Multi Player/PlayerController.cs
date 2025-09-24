@@ -16,6 +16,9 @@ namespace MultiPlayer.Player
         [SerializeField] private float _moveAcceleration = 10f;
 
         [Space]
+        [SerializeField] private float _maxLinearVelocity = 25f;
+
+        [Space]
         [SerializeField] private float _jumpImpulse = 5f;
 
         [Space]
@@ -123,6 +126,8 @@ namespace MultiPlayer.Player
 
             Move();
 
+            ClampLinearVelocity();
+
             UpdateAnimatorValues();
         }
 
@@ -190,6 +195,12 @@ namespace MultiPlayer.Player
             float dot = Vector3.Dot(projection.normalized, direction.normalized);
 
             return dot * projection.magnitude;
+        }
+
+        private void ClampLinearVelocity()
+        {
+            if (_player.Rigidbody.linearVelocity.magnitude > _maxLinearVelocity)
+                _player.Rigidbody.linearVelocity = _maxLinearVelocity * _player.Rigidbody.linearVelocity.normalized;
         }
 
         private void Jump()
