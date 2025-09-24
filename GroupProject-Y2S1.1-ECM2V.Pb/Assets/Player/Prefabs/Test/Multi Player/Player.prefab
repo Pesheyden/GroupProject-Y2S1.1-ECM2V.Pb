@@ -478,14 +478,14 @@ MonoBehaviour:
   - {fileID: 8371807367066103573}
   _range: 10
   _radius: 1
-  _spread: 0.5
+  _spread: 0.2
   _layerMask:
     serializedVersion: 2
     m_Bits: 125
   _reticles:
   - {fileID: 3384856054020812429}
   - {fileID: 8394439801460560839}
-  _force: 14.715
+  _force: 8
   _maxLengthMultiplier: 1.25
   _maxLength: 25
   _armPrefabs: []
