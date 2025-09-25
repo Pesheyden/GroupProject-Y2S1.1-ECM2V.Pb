@@ -299,7 +299,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1991883562
+  GlobalObjectIdHash: 1063513354
   InScenePlacedSourceGlobalObjectIdHash: 1063513354
   DeferredDespawnTick: 0
   Ownership: 1
@@ -513,7 +513,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4140575653418824441}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec859a388d32f714c83e1646c863a701, type: 3}
   m_Name: 
@@ -1154,7 +1154,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 240350438423542068, guid: b8b3e57da4a42b34f95c5a14c5524f7c, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 378504343535028589, guid: b8b3e57da4a42b34f95c5a14c5524f7c, type: 3}
       propertyPath: m_Layer
